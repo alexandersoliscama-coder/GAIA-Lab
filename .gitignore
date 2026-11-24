@@ -18,3 +18,5 @@ venv/
 # Claves y entorno
 .env
 kaggle.json
+
+!models/stats.npz

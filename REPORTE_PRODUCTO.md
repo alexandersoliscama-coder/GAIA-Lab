@@ -1,4 +1,6 @@
-# Reporte del producto · [Nombre del equipo]
+# GAIA Lab · Alert AlPACA — Ganado protegido
+
+Pronóstico de montaña a 3 km para apoyar el resguardo nocturno y la planificación del pastoreo en la puna.
 
 > **Plantilla.** Copia este archivo a la raíz del repositorio de tu equipo y responde cada sección. Sé breve y concreto: 1 a 2 párrafos por pregunta, con números donde puedas. El jurado lo lee durante la preselección.
 

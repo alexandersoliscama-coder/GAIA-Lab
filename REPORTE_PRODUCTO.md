@@ -3,8 +3,7 @@ Pronóstico de montaña a 3 km para apoyar el resguardo nocturno y la planificac
 
 > **Plantilla.** Copia este archivo a la raíz del repositorio de tu equipo y responde cada sección. Sé breve y concreto: 1 a 2 párrafos por pregunta, con números donde puedas. El jurado lo lee durante la preselección.
 
-**Integrantes:** Yeremi, Alvaro, Joseph, Gabriel
-**Producto:** [link al aplicativo o "se ejecuta en local, ver README"]
+**Integrantes:** Yeremi Alexander Camacho Solís, Álvaro Rodrigo Ayon Chinga, Joseph Alí Huamanyauri Hernandez, Gabriel Dimas Gordillo Rodríguez**Producto:** [link al aplicativo o "se ejecuta en local, ver README"]
 **Video pitch:** [link]
 
 ---

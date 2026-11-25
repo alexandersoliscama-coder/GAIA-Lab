@@ -37,7 +37,6 @@ def obtener_modelo_en_cache():
 
 
 st.title("Ganado Protegido · Pronóstico Agroclimático a 3 km")
-st.info("Contexto ENFEN: Vigilancia activa de lluvias en sierra occidental y descensos térmicos nocturnos en puna.")
 
 recursos = obtener_modelo_en_cache()
 
@@ -59,7 +58,8 @@ with st.sidebar:
     alt_min = st.number_input("Altura mínima (m)", 2500, 5000, 3800, 100)
     alt_max = st.number_input("Altura máxima (m)", 3000, 5800, 4800, 100)
 
-    st.subheader("Umbrales cobertizo (parametrizables)")
+    st.subheader("Umbrales cobertizo (provisionales)")
+    st.caption("Umbrales provisionales; se actualizarán con fuentes revisadas en el siguiente PR.")
     t_ambar = st.number_input("T° Ámbar (°C)", -5.0, 10.0, 2.0, 0.5)
     t_rojo = st.number_input("T° Rojo (°C)", -10.0, 5.0, 0.0, 0.5)
     v_ambar = st.number_input("Viento Ámbar (m/s)", 1.0, 20.0, 6.0, 0.5)

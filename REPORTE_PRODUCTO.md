@@ -1,9 +1,9 @@
-# Reporte del producto · [Nombre del equipo]
+# Reporte del producto · GAIA Lab
+Pronóstico de montaña a 3 km para apoyar el resguardo nocturno y la planificación del pastoreo en la puna.
 
 > **Plantilla.** Copia este archivo a la raíz del repositorio de tu equipo y responde cada sección. Sé breve y concreto: 1 a 2 párrafos por pregunta, con números donde puedas. El jurado lo lee durante la preselección.
 
-**Integrantes:** [Nombre 1], [Nombre 2], [Nombre 3], [Nombre 4]
-**Producto:** [link al aplicativo o "se ejecuta en local, ver README"]
+**Integrantes:** Yeremi Alexander Camacho Solís, Álvaro Rodrigo Ayon Chinga, Joseph Alí Huamanyauri Hernandez, Gabriel Dimas Gordillo Rodríguez**Producto:** [link al aplicativo o "se ejecuta en local, ver README"]
 **Video pitch:** [link]
 
 ---

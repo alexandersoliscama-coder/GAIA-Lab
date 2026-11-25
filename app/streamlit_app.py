@@ -36,7 +36,9 @@ def obtener_modelo_en_cache():
     return cargar_recursos()
 
 
-st.title("Ganado Protegido · Pronóstico Agroclimático a 3 km")
+st.title("¿Encierro el ganado esta noche?")
+st.caption("Ganado Protegido · Pronóstico agroclimático a 3 km")
+
 st.info("Contexto ENFEN: Vigilancia activa de lluvias en sierra occidental y descensos térmicos nocturnos en puna.")
 
 recursos = obtener_modelo_en_cache()
@@ -96,7 +98,7 @@ if st.button("Ejecutar pronóstico y decisiones", type="primary"):
         st.write(dec1["accion"])
         st.caption(f"Hora crítica: {dec1['hora_critica']} ({dec1['altitud_m']:.0f} m)")
     with c2:
-        st.subheader("2️⃣ Pastoreo mañana")
+        st.subheader("2️⃣ Pastoreo")
         st.metric(dec2["decision"], f"~{dec2['alt_sugerida']:.0f} m s. n. m.")
         st.write(dec2["motivo"])
     with c3:
@@ -106,6 +108,21 @@ if st.button("Ejecutar pronóstico y decisiones", type="primary"):
 
     st.divider()
 
+    st.subheader("¿Dónde pastorear?")
+    st.warning("Datos de ejemplo · Zona alta y zona baja por validar con el pastor.")
+
+    zona_alta, zona_baja = st.columns(2)
+
+    with zona_alta:
+        st.markdown("**Pampa alta**")
+        st.metric("Temperatura mínima de ejemplo", "−1.5 °C")
+
+    with zona_baja:
+        st.markdown("**Quebrada baja**")
+        st.metric("Temperatura mínima de ejemplo", "2.0 °C")
+
+    st.write("En este ejemplo, convendría bajar el ganado a Quebrada baja.")
+    st.divider()
     # Comparación GFS (27 km) vs Modelo IA (3 km)
     st.subheader(f"Comparación GFS (27 km) vs. Modelo IA (3 km) en {sector}")
     g1, g2 = st.columns(2)

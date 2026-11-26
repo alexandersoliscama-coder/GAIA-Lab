@@ -37,11 +37,9 @@ def obtener_modelo_en_cache():
     return cargar_recursos()
 
 
-st.title("¿Encierro el ganado esta noche?")
+st.title("Decisiones para cuidar el ganado")
 st.caption("Ganado Protegido · Pronóstico agroclimático a 3 km")
 
-st.title("¿Encierro el ganado esta noche?")
-st.caption("Ganado Protegido · Pronóstico agroclimático a 3 km")
 recursos = obtener_modelo_en_cache()
 
 with st.sidebar:
@@ -165,7 +163,6 @@ if st.button("Ejecutar pronóstico y decisiones", type="primary"):
         st.markdown("**Quebrada baja**")
         st.metric("Temperatura mínima de ejemplo", "2.0 °C")
 
-    st.write("En este ejemplo, convendría bajar el ganado a Quebrada baja.")
     st.divider()
     # Comparación GFS (27 km) vs Modelo IA (3 km)
     st.subheader(f"Comparación GFS (27 km) vs. Modelo IA (3 km) en {sector}")

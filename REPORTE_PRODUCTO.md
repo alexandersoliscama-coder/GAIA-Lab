@@ -22,15 +22,17 @@ Describe tu modelo de downscaling: arquitectura (por ejemplo, CNN, U-Net, ConvLS
 
 ## 2. ¿Para quién es y qué problema le resuelve?
 
-¿Quién es tu usuario concreto (agricultor, guía de montaña, municipalidad…)? ¿Qué decisión/accion/etc toma hoy sin buena información y qué decide/toma/etc distinto con tu producto?
+El producto está dirigido a criadores de alpacas y ovinos de la puna. Antes de anochecer, el criador decide si lleva el ganado al cobertizo o lo deja en el corral. Por la mañana, decide si lleva sus animales a pastar a la parte alta o a una zona más baja. Para elegir necesita saber en qué lugar y a qué hora se espera el frío. Si se pronostica helada arriba, quiere saber si conviene bajar los animales.
+
+En la consulta inicial, un familiar de un integrante pidió saber dónde pastorear y recibir el aviso con una semana de anticipación, por SMS o WhatsApp. La entrevista con el pastor permitirá confirmar los nombres locales de las zonas, el mejor momento para avisar y el canal que le resulta más práctico.
 
 ## 3. ¿Cuál es la propuesta de valor del producto?
 
-En una o dos frases: qué gana el usuario al usar tu producto. Si puedes, cuantifícalo (tiempo, dinero, riesgo evitado, alcance).
+Ganado Protegido ayuda al criador a preparar el resguardo nocturno y organizar el pastoreo. Para el sector consultado, muestra qué acción sugiere la app, cuándo se espera el frío y qué condiciones explican la recomendación. La consulta de hasta siete días permite anticipar cambios en el pastoreo y decidir con tiempo si se necesita preparar el cobertizo.
 
 ## 4. ¿Por qué tu producto es diferente a algo usual?
 
-¿Qué lo distingue de una app de clima común o de un mapa con el pronóstico? ¿Qué hace que el usuario lo prefiera?
+El producto usa el pronóstico global GFS, de unos 27 km, como entrada a un modelo que estima las condiciones en celdas de 3 km. En la consulta de pastoreo, la recomendación considera la helada de madrugada y el enfriamiento durante el día en las franjas disponibles del sector. La app muestra la acción sugerida y el motivo para que el criador pueda valorar esa información junto con lo que conoce del terreno.
 
 ## 5. ¿Cómo usa el producto la salida de tu modelo?
 

@@ -150,18 +150,25 @@ if st.button("Ejecutar pronóstico y decisiones", type="primary"):
 
     st.divider()
 
-    st.subheader("¿Dónde pastorear?")
-    st.warning("Datos de ejemplo · Zona alta y zona baja por validar con el pastor.")
-
-    zona_alta, zona_baja = st.columns(2)
-
-    with zona_alta:
-        st.markdown("**Pampa alta**")
-        st.metric("Temperatura mínima de ejemplo", "−1.5 °C")
-
-    with zona_baja:
-        st.markdown("**Quebrada baja**")
-        st.metric("Temperatura mínima de ejemplo", "2.0 °C")
+      st.subheader("¿Dónde pastorear?")
+    if "zona_alta" not in dec2 or "zona_baja" not in dec2:
+        st.caption("La comparación por zonas todavía no está disponible.")
+    else:
+        st.caption(f"Pronóstico para {dec2['fecha_manana']} (hora de Lima)")
+        for columna, (nombre, clave) in zip(
+            st.columns(2),
+            (("Zona alta", "zona_alta"), ("Zona baja", "zona_baja")),
+        ):
+            with columna:
+                st.markdown(f"**{nombre}**")
+                zona = dec2[clave]
+                if zona is None:
+                    st.caption("Sin celdas disponibles en el rango de altura seleccionado.")
+                    continue
+                st.write(f"Altitud: {zona['altura_m']:.0f} m s. n. m.")
+                helada = "Sí" if zona["helada_madrugada"] else "No"
+                st.write(f"¿Helada prevista de madrugada? {helada}")
+                st.write(f"Temperatura promedio de día: {zona['tmedia_dia']:.1f} °C")
 
     st.divider()
     # Comparación GFS (27 km) vs Modelo IA (3 km)

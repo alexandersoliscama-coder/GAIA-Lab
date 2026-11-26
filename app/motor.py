@@ -289,7 +289,7 @@ def calcular_indice_enfriamiento(temp_c, viento_10m_ms, lluvia_24h_mm=0.0):
     v_04 = np.maximum(0.0, 0.47 * np.asarray(viento_10m_ms, dtype=np.float32))
     t_arr = np.asarray(temp_c, dtype=np.float32)
     r_arr = np.maximum(0.0, np.asarray(lluvia_24h_mm, dtype=np.float32))
-    return (11.7 + 3.11 * np.sqrt(v_04)) * (40.0 - t_arr) + 481.0 + 418.1 * (1.0 - np.exp(-0.04 * r_arr))
+    return (11.7 + 3.1 * np.sqrt(v_04)) * (40.0 - t_arr) + 481.0 + 418.0 * (1.0 - np.exp(-0.04 * r_arr))
 
 
 def analizar_heladas(Y, times, static, alt_min=3800.0, alt_max=4800.0, umbral_c=0.0):

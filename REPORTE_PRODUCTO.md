@@ -22,9 +22,13 @@ Describe tu modelo de downscaling: arquitectura (por ejemplo, CNN, U-Net, ConvLS
 
 ## 2. ¿Para quién es y qué problema le resuelve?
 
-El producto está dirigido a criadores de alpacas y ovinos de la puna. Antes de anochecer, el criador decide si lleva el ganado al cobertizo o lo deja en el corral. Por la mañana, decide si lleva sus animales a pastar a la parte alta o a una zona más baja. Para elegir necesita saber en qué lugar y a qué hora se espera el frío. Si se pronostica helada arriba, quiere saber si conviene bajar los animales.
+El producto está dirigido a criadores de alpacas y ovinos de la puna. Por la noche, el criador decide si resguarda el ganado en el cobertizo. Por la mañana, elige dónde llevarlo a pastar. Si considera quemar pastos, necesita saber si el fuego podría salirse de control. Para esa tercera decisión, la app estima el riesgo con los datos de las 13:00, hora de Lima. Una mala decisión puede dejar al ganado expuesto al frío, hacerle perder tiempo al criador al mover los animales o dañar los pastos si el fuego se propaga.
 
-En la consulta inicial, un familiar de un integrante pidió saber dónde pastorear y recibir el aviso con una semana de anticipación, por SMS o WhatsApp. La entrevista con el pastor permitirá confirmar los nombres locales de las zonas, el mejor momento para avisar y el canal que le resulta más práctico.
+**Lo que pidió el familiar.** Quiere saber dónde pastorear y, si se espera una helada en la parte alta, bajar el ganado. Pidió un aviso con una semana de anticipación por SMS o WhatsApp. **Propuesta del equipo.** Nos gustaría que el aviso indique la zona, el día y la acción sugerida, y que la app muestre la hora prevista de la temperatura mínima. El envío de avisos por SMS o WhatsApp todavía está por implementar.
+
+### Por validar con el pastor
+
+¿Cómo llama a sus zonas de pastoreo? ¿Qué señales usa para resguardar o mover al ganado? ¿Le sería útil saber la hora de la mínima? ¿Cuándo y por qué canal le conviene recibir el aviso? Al mostrarle el boceto, preguntarle qué haría, cuándo y por qué.
 
 ## 3. ¿Cuál es la propuesta de valor del producto?
 

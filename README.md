@@ -2,9 +2,22 @@
 
 Sistema de alerta temprana y soporte a la decisión para criadores ganaderos altoandinos (Áncash, Perú). Combina pronósticos meteorológicos globales GFS (~27 km) con un modelo de *downscaling* neuronal a **3 km** para anticipar heladas nocturnas, orientar el pastoreo diurno y evaluar el riesgo de propagación de quemas.
 
+## Integrantes
+
+* Yeremi Alexander Camacho Solis
+* Gabriel Dimas Gordillo Rodríguez 
+* Jordy Joseph Valles Moya
+* Alvaro Rodrigo Ayon Chinga
+
+## Video de presentación
+
+* **Enlace:** Pendiente
+
+---
+
 ## Requisitos previos
 
-* **Python 3.10 o superior** (probado con Python 3.11)
+* **Python 3.11 o superior** (versiones anteriores como 3.10 no son compatibles con las ruedas de `numpy==2.4.6`, `pandas==3.1.1`, `torch==2.15.0`, `matplotlib==3.11.2` y `streamlit==1.67.0`).
 * **Git**
 * Conexión a internet para descargar el pronóstico GFS en vivo desde Open-Meteo (la aplicación guarda caché local tras la primera ejecución).
 
@@ -44,18 +57,28 @@ pip install -r requirements.txt
 
 ### 4. Descargar la data de Kaggle en `data/`
 
-1. Descarga el conjunto de datos de la competencia desde Kaggle.
-2. Coloca el archivo estático del dominio (`static.npz`) dentro de la carpeta **`data/`**:
-   ```text
-   GAIA-Lab/
-   ├── data/
-   │   └── static.npz
-   └── models/
-       ├── modelo.pt
-       ├── stats.npz
-       └── chill_percentiles.npz
-   ```
-   *(Los pesos y estadísticas del modelo en `models/` ya vienen incluidos en el repositorio).*
+La data no está en el repositorio por su tamaño. Puedes bajarla de dos formas (en ambos casos debes aceptar primero las reglas de la competencia en Kaggle):
+
+* **Desde el navegador:** entra a la pestaña **Data** de la competencia en Kaggle, acepta las reglas, descarga los archivos y extrae el contenido dentro de la carpeta **`data/`**.
+* **Desde la terminal (API de Kaggle):** desde la raíz del repositorio (`GAIA-Lab`), ejecuta:
+  ```bash
+  pip install kaggle
+  kaggle competitions download -c hackathon-ia-pucp-2026
+  unzip hackathon-ia-pucp-2026.zip -d data/
+  ```
+  *(En Windows PowerShell, si no tienes `unzip`, puedes descomprimir con `Expand-Archive hackathon-ia-pucp-2026.zip -DestinationPath data/`).*
+
+Verifica que el archivo estático del dominio (`static.npz`) quede ubicado en **`data/`**:
+```text
+GAIA-Lab/
+├── data/
+│   └── static.npz
+└── models/
+    ├── modelo.pt
+    ├── stats.npz
+    └── chill_percentiles.npz
+```
+*(Los pesos y estadísticas del modelo en `models/` ya vienen incluidos en el repositorio).*
 
 ---
 

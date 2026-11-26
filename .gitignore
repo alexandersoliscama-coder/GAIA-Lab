@@ -20,3 +20,4 @@ venv/
 kaggle.json
 
 !models/stats.npz
+!models/chill_percentiles.npz

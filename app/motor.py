@@ -209,8 +209,10 @@ def obtener_gfs_seguro(forecast_hours=168, start_date=None, end_date=None):
         else:
             # Si cambia el horizonte pedido y el caché tiene otro tamaño, refrescar
             if os.path.exists(cache_path):
-                d_chk = np.load(cache_path)
-                if abs(len(d_chk["times"]) - (forecast_hours + 2)) > 4:
+                # Cerrar el .npz antes de borrarlo: en Windows un archivo abierto no se puede borrar
+                with np.load(cache_path) as d_chk:
+                    n_cache = len(d_chk["times"])
+                if abs(n_cache - (forecast_hours + 2)) > 4:
                     os.remove(cache_path)
             X, times = get_gfs_forecast(forecast_hours=forecast_hours, cache_path=cache_path)
             if os.path.exists(cache_path) and not os.path.exists(backup_path):
@@ -220,8 +222,9 @@ def obtener_gfs_seguro(forecast_hours=168, start_date=None, end_date=None):
     except Exception as err:
         for ruta_alt in (cache_path, backup_path):
             if os.path.exists(ruta_alt):
-                d = np.load(ruta_alt)
-                return d["X"], d["times"], f"Respaldo local ({Path(ruta_alt).name}) tras error de API"
+                with np.load(ruta_alt) as d:
+                    X, times = d["X"], d["times"]
+                return X, times, f"Respaldo local ({Path(ruta_alt).name}) tras error: {type(err).__name__}"
         raise RuntimeError(f"Error en Open-Meteo y sin caché de respaldo disponible: {err}")
 
 

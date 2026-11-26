@@ -366,8 +366,9 @@ def evaluar_cobertizo_sector(
     Evalúa solo la PRÓXIMA noche (18:00-07:00 Lima; 23-12 UTC):
     - Rojo (oficial): T_min <= 0 °C (Senamhi-FAO, 2010) + etiqueta Da Motta (1961).
     - Ámbar (adaptado): 0 < T_min <= margen, donde margen = max(2.0 °C, mae_nocturno).
-    - Viento y lluvia entran vía índice de enfriamiento horario máximo de la noche
-      (McCaskill et al., 2010; Weeks et al., 2015; FAO-56).
+    - Viento entra vía índice de enfriamiento en seco (R=0) comparado contra percentiles
+      p90/p97 locales (111 noches del entrenamiento, 18 feb a 30 jun 2024).
+    - La lluvia acumulada de 24 h previas se reporta aparte como agravante informativo.
     """
     i, j = ubicar_celda_sector(sector_nombre, static, alt_min=alt_min, alt_max=alt_max)
     idx_noche = _indices_proxima_noche(times)
@@ -376,7 +377,7 @@ def evaluar_cobertizo_sector(
     T_noche = Y[idx_noche, i, j, 1] - 273.15
     vel_noche = np.sqrt(Y[idx_noche, i, j, 2] ** 2 + Y[idx_noche, i, j, 3] ** 2)
 
-    # Lluvia acumulada de 24 h previas para cada hora nocturna
+    # Lluvia acumulada de 24 h previas para cada hora nocturna (como agravante)
     lluvia_24h = np.zeros(len(idx_noche), dtype=np.float32)
     if precip_serie_utc is not None and len(precip_serie_utc) > 0:
         for pos, k in enumerate(idx_noche):
@@ -384,8 +385,9 @@ def evaluar_cobertizo_sector(
             ventana_24h = precip_serie_utc.loc[dt_u - pd.Timedelta(hours=23):dt_u]
             lluvia_24h[pos] = float(ventana_24h.sum()) if len(ventana_24h) > 0 else 0.0
 
-    chill_horario = calcular_indice_enfriamiento(T_noche, vel_noche, lluvia_24h)
-    chill_max = float(chill_horario.max())
+    lluvia_24h_max = float(lluvia_24h.max())
+    chill_seco_max = float(calcular_indice_enfriamiento(T_noche, vel_noche, 0.0).max())
+    chill_con_lluvia_max = float(calcular_indice_enfriamiento(T_noche, vel_noche, lluvia_24h).max())
 
     tmin_noche = float(T_noche.min())
     vmax_noche = float(vel_noche.max())
@@ -393,16 +395,16 @@ def evaluar_cobertizo_sector(
     ventana_texto = f"{a_hora_lima(times[idx_noche[0]])} a {a_hora_lima(times[idx_noche[-1]])}"
     severidad = clasificar_severidad_helada(tmin_noche)
 
-    # Evaluación por percentiles p90/p97 locales del índice de enfriamiento (si existen)
+    # Evaluación por percentiles p90/p97 locales del índice en seco (R = 0)
     nivel_chill = "Sin percentiles locales"
     semaforo_chill = "VERDE"
     if chill_pct is not None and "p90" in chill_pct and "p97" in chill_pct:
         p90 = float(chill_pct["p90"][i, j])
         p97 = float(chill_pct["p97"][i, j])
-        if chill_max > p97:
+        if chill_seco_max > p97:
             semaforo_chill = "ROJO"
             nivel_chill = f"> p97 local ({p97:.0f})"
-        elif chill_max >= p90:
+        elif chill_seco_max >= p90:
             semaforo_chill = "ÁMBAR"
             nivel_chill = f"p90–p97 local ({p90:.0f}–{p97:.0f})"
         else:
@@ -418,13 +420,19 @@ def evaluar_cobertizo_sector(
         semaforo = "VERDE"
         accion = "Sin helada prevista esta noche (T° > margen de seguridad)."
 
+    if lluvia_24h_max >= 1.0:
+        accion += f" Agravante por lluvia previa: {lluvia_24h_max:.1f} mm en 24 h (enfriamiento húmedo: {chill_con_lluvia_max:.0f} kJ/m²·h)."
+
     return {
         "sector": sector_nombre,
         "altitud_m": float(static["dem"][i, j]),
         "ventana_noche": ventana_texto,
         "tmin_noche": tmin_noche,
         "vmax_noche": vmax_noche,
-        "chill_max": chill_max,
+        "chill_max": chill_seco_max,
+        "chill_seco_max": chill_seco_max,
+        "chill_con_lluvia_max": chill_con_lluvia_max,
+        "lluvia_24h_max": lluvia_24h_max,
         "nivel_chill": nivel_chill,
         "severidad": severidad,
         "margen_ambar": margen_ambar,
@@ -433,7 +441,6 @@ def evaluar_cobertizo_sector(
         "accion": accion,
         "evidencia": "Oficial ≤ 0 °C (rojo) / Adaptado margen 2 °C (ámbar) · Senamhi-FAO (2010); Chill adaptado McCaskill et al. (2010)",
     }
-
 
 # ---------------------------------------------------------------------------
 # 5. DECISIÓN 2: PASTOREO MAÑANA (07:00 - 17:00 LIMA / 12 - 22 UTC)

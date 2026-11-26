@@ -121,9 +121,17 @@ if st.button("Ejecutar pronóstico y decisiones", type="primary"):
         st.metric(
             f"Semáforo: {dec1['semaforo']}",
             f"{dec1['tmin_noche']:.1f} °C",
-            delta=f"Enfriamiento máx: {dec1['chill_max']:.0f} kJ/m²·h",
+            delta=f"Enfriamiento (R=0): {dec1['chill_seco_max']:.0f} kJ/m²·h ({dec1['nivel_chill']})",
             delta_color="off",
+            help="Comparado contra percentiles de 111 noches del entrenamiento, 18 feb a 30 jun 2024.",
         )
+        if dec1["lluvia_24h_max"] >= 1.0:
+            st.warning(
+                f"Agravante por lluvia (últimas 24 h): {dec1['lluvia_24h_max']:.1f} mm "
+                f"(enfriamiento húmedo: {dec1['chill_con_lluvia_max']:.0f} kJ/m²·h)"
+            )
+        else:
+            st.caption(f"Lluvia últimas 24 h: {dec1['lluvia_24h_max']:.1f} mm (sin agravante por humedad)")
         st.write(dec1["accion"])
         st.caption(f"Ventana: {dec1['ventana_noche']} | Hora mínima: {dec1['hora_critica']} ({dec1['altitud_m']:.0f} m)")
         st.caption(f"Evidencia: {dec1['evidencia']}")

@@ -171,11 +171,12 @@ if st.button("Ejecutar pronóstico y decisiones", type="primary"):
                 st.markdown(f"**{nombre}**")
                 zona = dec2[clave]
                 if zona is None:
-                    st.caption("Sin celdas disponibles en el rango de altura seleccionado.")
+                    st.caption(f"Sin {nombre.lower()} disponible en el rango")
                     continue
                 st.write(f"Altitud: {zona['altura_m']:.0f} m s. n. m.")
                 helada = "Sí" if zona["helada_madrugada"] else "No"
                 st.write(f"¿Helada prevista de madrugada? {helada}")
+                st.write(f"Mínima de madrugada: {zona['tmin_madrugada']:.1f} °C")
                 st.write(f"Temperatura promedio de día: {zona['tmedia_dia']:.1f} °C")
 
     st.divider()

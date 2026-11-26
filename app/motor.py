@@ -283,7 +283,7 @@ def calcular_indice_enfriamiento(temp_c, viento_10m_ms, lluvia_24h_mm=0.0):
     Índice de enfriamiento de Nixon-Smith (McCaskill et al., 2010; Weeks et al., 2015)
     con ajuste logarítmico de viento a 0,4 m según FAO-56 (Allen et al., 1998):
       v_0.4 = 0.47 * v_10
-      C = (11.7 + 3.11 * sqrt(v_0.4)) * (40 - T) + 481 + 418.1 * (1 - exp(-0.04 * R))
+      C = (11.7 + 3.1 * sqrt(v_0.4)) * (40 - T) + 481.0 + 418.0 * (1 - exp(-0.04 * R))
     Devuelve C en kJ/(m²·h).
     """
     v_04 = np.maximum(0.0, 0.47 * np.asarray(viento_10m_ms, dtype=np.float32))

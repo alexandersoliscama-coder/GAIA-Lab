@@ -72,7 +72,7 @@ with st.sidebar:
         max_value=6.0,
         value=0.0,
         step=0.1,
-        help="Margen ámbar = máx(2.0 °C, MAE nocturno) según Senamhi-FAO (2010).",
+        help="Margen ámbar = máx(2.0 °C, MAE nocturno) (adaptado; ver doc de umbrales).",
     )
 
 if st.button("Ejecutar pronóstico y decisiones", type="primary"):

@@ -209,8 +209,10 @@ def obtener_gfs_seguro(forecast_hours=168, start_date=None, end_date=None):
         else:
             # Si cambia el horizonte pedido y el caché tiene otro tamaño, refrescar
             if os.path.exists(cache_path):
-                d_chk = np.load(cache_path)
-                if abs(len(d_chk["times"]) - (forecast_hours + 2)) > 4:
+                # Cerrar el .npz antes de borrarlo: en Windows un archivo abierto no se puede borrar
+                with np.load(cache_path) as d_chk:
+                    n_cache = len(d_chk["times"])
+                if abs(n_cache - (forecast_hours + 2)) > 4:
                     os.remove(cache_path)
             X, times = get_gfs_forecast(forecast_hours=forecast_hours, cache_path=cache_path)
             if os.path.exists(cache_path) and not os.path.exists(backup_path):
@@ -220,8 +222,9 @@ def obtener_gfs_seguro(forecast_hours=168, start_date=None, end_date=None):
     except Exception as err:
         for ruta_alt in (cache_path, backup_path):
             if os.path.exists(ruta_alt):
-                d = np.load(ruta_alt)
-                return d["X"], d["times"], f"Respaldo local ({Path(ruta_alt).name}) tras error de API"
+                with np.load(ruta_alt) as d:
+                    X, times = d["X"], d["times"]
+                return X, times, f"Respaldo local ({Path(ruta_alt).name}) tras error: {type(err).__name__}"
         raise RuntimeError(f"Error en Open-Meteo y sin caché de respaldo disponible: {err}")
 
 
@@ -366,8 +369,9 @@ def evaluar_cobertizo_sector(
     Evalúa solo la PRÓXIMA noche (18:00-07:00 Lima; 23-12 UTC):
     - Rojo (oficial): T_min <= 0 °C (Senamhi-FAO, 2010) + etiqueta Da Motta (1961).
     - Ámbar (adaptado): 0 < T_min <= margen, donde margen = max(2.0 °C, mae_nocturno).
-    - Viento y lluvia entran vía índice de enfriamiento horario máximo de la noche
-      (McCaskill et al., 2010; Weeks et al., 2015; FAO-56).
+    - Viento entra vía índice de enfriamiento en seco (R=0) comparado contra percentiles
+      p90/p97 locales (111 noches del entrenamiento, 18 feb a 30 jun 2024).
+    - La lluvia acumulada de 24 h previas se reporta aparte como agravante informativo.
     """
     i, j = ubicar_celda_sector(sector_nombre, static, alt_min=alt_min, alt_max=alt_max)
     idx_noche = _indices_proxima_noche(times)
@@ -376,7 +380,7 @@ def evaluar_cobertizo_sector(
     T_noche = Y[idx_noche, i, j, 1] - 273.15
     vel_noche = np.sqrt(Y[idx_noche, i, j, 2] ** 2 + Y[idx_noche, i, j, 3] ** 2)
 
-    # Lluvia acumulada de 24 h previas para cada hora nocturna
+    # Lluvia acumulada de 24 h previas para cada hora nocturna (como agravante)
     lluvia_24h = np.zeros(len(idx_noche), dtype=np.float32)
     if precip_serie_utc is not None and len(precip_serie_utc) > 0:
         for pos, k in enumerate(idx_noche):
@@ -384,8 +388,9 @@ def evaluar_cobertizo_sector(
             ventana_24h = precip_serie_utc.loc[dt_u - pd.Timedelta(hours=23):dt_u]
             lluvia_24h[pos] = float(ventana_24h.sum()) if len(ventana_24h) > 0 else 0.0
 
-    chill_horario = calcular_indice_enfriamiento(T_noche, vel_noche, lluvia_24h)
-    chill_max = float(chill_horario.max())
+    lluvia_24h_max = float(lluvia_24h.max())
+    chill_seco_max = float(calcular_indice_enfriamiento(T_noche, vel_noche, 0.0).max())
+    chill_con_lluvia_max = float(calcular_indice_enfriamiento(T_noche, vel_noche, lluvia_24h).max())
 
     tmin_noche = float(T_noche.min())
     vmax_noche = float(vel_noche.max())
@@ -393,16 +398,16 @@ def evaluar_cobertizo_sector(
     ventana_texto = f"{a_hora_lima(times[idx_noche[0]])} a {a_hora_lima(times[idx_noche[-1]])}"
     severidad = clasificar_severidad_helada(tmin_noche)
 
-    # Evaluación por percentiles p90/p97 locales del índice de enfriamiento (si existen)
+    # Evaluación por percentiles p90/p97 locales del índice en seco (R = 0)
     nivel_chill = "Sin percentiles locales"
     semaforo_chill = "VERDE"
     if chill_pct is not None and "p90" in chill_pct and "p97" in chill_pct:
         p90 = float(chill_pct["p90"][i, j])
         p97 = float(chill_pct["p97"][i, j])
-        if chill_max > p97:
+        if chill_seco_max > p97:
             semaforo_chill = "ROJO"
             nivel_chill = f"> p97 local ({p97:.0f})"
-        elif chill_max >= p90:
+        elif chill_seco_max >= p90:
             semaforo_chill = "ÁMBAR"
             nivel_chill = f"p90–p97 local ({p90:.0f}–{p97:.0f})"
         else:
@@ -424,7 +429,10 @@ def evaluar_cobertizo_sector(
         "ventana_noche": ventana_texto,
         "tmin_noche": tmin_noche,
         "vmax_noche": vmax_noche,
-        "chill_max": chill_max,
+        "chill_max": chill_seco_max,
+        "chill_seco_max": chill_seco_max,
+        "chill_con_lluvia_max": chill_con_lluvia_max,
+        "lluvia_24h_max": lluvia_24h_max,
         "nivel_chill": nivel_chill,
         "severidad": severidad,
         "margen_ambar": margen_ambar,
@@ -433,7 +441,6 @@ def evaluar_cobertizo_sector(
         "accion": accion,
         "evidencia": "Oficial ≤ 0 °C (rojo) / Adaptado margen 2 °C (ámbar) · Senamhi-FAO (2010); Chill adaptado McCaskill et al. (2010)",
     }
-
 
 # ---------------------------------------------------------------------------
 # 5. DECISIÓN 2: PASTOREO MAÑANA (07:00 - 17:00 LIMA / 12 - 22 UTC)
@@ -462,6 +469,7 @@ def recomendar_pastoreo_sector(Y, times, static, sector_nombre, alt_min=3800.0, 
     - Regla 1 (Clements et al., 2003): no asume que bajar siempre es más templado (evalúa T real del modelo).
     - Regla 2 (Provisional): prefiere la zona que NO tuvo helada (≤ 0 °C) en la madrugada y,
       entre las que no la tuvieron, la de menor índice de enfriamiento diurno medio.
+    Devuelve también el detalle de `zona_alta` y `zona_baja` para la interfaz de pastoreo.
     """
     i0, j0 = ubicar_celda_sector(sector_nombre, static, alt_min=alt_min, alt_max=alt_max)
     idx_madrugada, idx_dia, fecha_str = _indices_manana_dia(times)
@@ -474,7 +482,8 @@ def recomendar_pastoreo_sector(Y, times, static, sector_nombre, alt_min=3800.0, 
     alt_base = float(static["dem"][i0, j0])
 
     T_mad = Y[idx_madrugada, i_ini:i_fin, j_ini:j_fin, 1] - 273.15
-    tuvo_helada_mad = T_mad.min(axis=0) <= 0.0
+    tmin_mad_grid = T_mad.min(axis=0)
+    tuvo_helada_mad = tmin_mad_grid <= 0.0
 
     T_dia = Y[idx_dia, i_ini:i_fin, j_ini:j_fin, 1] - 273.15
     V_dia = np.sqrt(
@@ -494,11 +503,14 @@ def recomendar_pastoreo_sector(Y, times, static, sector_nombre, alt_min=3800.0, 
         pool = sin_helada if sin_helada.any() else mask
         mejor_idx = np.argmin(np.where(pool, chill_dia_medio, np.inf))
         r, c = np.unravel_index(mejor_idx, dem_sub.shape)
+        helada_celda = bool(tuvo_helada_mad[r, c])
         return {
-            "sin_helada": bool(sin_helada.any()),
-            "chill": float(chill_dia_medio[r, c]),
-            "alt": float(dem_sub[r, c]),
-            "t_dia": float(T_dia[:, r, c].mean()),
+            "altura_m": float(dem_sub[r, c]),
+            "helada_madrugada": helada_celda,
+            "tmin_madrugada": float(tmin_mad_grid[r, c]),
+            "tmedia_dia": float(T_dia[:, r, c].mean()),
+            "chill_dia_medio": float(chill_dia_medio[r, c]),
+            "sin_helada": not helada_celda,
         }
 
     cand_arriba = _evaluar_grupo(arriba_mask)
@@ -506,8 +518,8 @@ def recomendar_pastoreo_sector(Y, times, static, sector_nombre, alt_min=3800.0, 
 
     if cand_arriba and cand_abajo:
         # Prioridad 1: evitar zona con helada en madrugada; Prioridad 2: menor índice de enfriamiento diurno
-        score_arriba = (0 if cand_arriba["sin_helada"] else 1, cand_arriba["chill"])
-        score_abajo = (0 if cand_abajo["sin_helada"] else 1, cand_abajo["chill"])
+        score_arriba = (0 if cand_arriba["sin_helada"] else 1, cand_arriba["chill_dia_medio"])
+        score_abajo = (0 if cand_abajo["sin_helada"] else 1, cand_abajo["chill_dia_medio"])
         if score_arriba <= score_abajo:
             decision = "Pastorea en ladera alta"
             elegido = cand_arriba
@@ -526,16 +538,25 @@ def recomendar_pastoreo_sector(Y, times, static, sector_nombre, alt_min=3800.0, 
         razon = "única franja disponible dentro del rango de puna seleccionado"
     else:
         decision = "Mantén pastoreo en sector base"
-        elegido = {"alt": alt_base, "chill": float(chill_dia_medio.mean()), "sin_helada": not bool(tuvo_helada_mad.any()), "t_dia": float(T_dia.mean())}
+        elegido = {
+            "altura_m": alt_base,
+            "helada_madrugada": bool(tuvo_helada_mad.any()),
+            "tmin_madrugada": float(tmin_mad_grid.min()),
+            "tmedia_dia": float(T_dia.mean()),
+            "chill_dia_medio": float(chill_dia_medio.mean()),
+            "sin_helada": not bool(tuvo_helada_mad.any()),
+        }
         razon = "sin gradiente altitudinal significativo en celdas vecinas dentro del rango"
 
     return {
         "sector": sector_nombre,
         "fecha_manana": fecha_str,
         "alt_base": alt_base,
-        "alt_sugerida": elegido["alt"],
+        "alt_sugerida": elegido["altura_m"],
         "decision": decision,
-        "motivo": f"Para mañana {fecha_str} (07:00–17:00): ir hacia ~{elegido['alt']:.0f} m ({razon}; T° media diurna {elegido['t_dia']:.1f} °C).",
+        "zona_alta": cand_arriba,
+        "zona_baja": cand_abajo,
+        "motivo": f"Para mañana {fecha_str} (07:00–17:00): ir hacia ~{elegido['altura_m']:.0f} m ({razon}; T° media diurna {elegido['tmedia_dia']:.1f} °C).",
         "aviso_resolucion": "Cautela: celdas de 3 km (resolución efectiva WRF ~20 km / 7Δx; Skamarock, 2004); quebradas estrechas pueden variar.",
         "evidencia": "Provisional · Reglas físicas de inversión y enfriamiento (Clements et al., 2003; Pulgar Vidal, 2014)",
     }

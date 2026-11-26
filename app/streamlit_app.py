@@ -150,7 +150,7 @@ if st.button("Ejecutar pronóstico y decisiones", type="primary"):
 
     st.divider()
 
-      st.subheader("¿Dónde pastorear?")
+    st.subheader("¿Dónde pastorear?")
     if "zona_alta" not in dec2 or "zona_baja" not in dec2:
         st.caption("La comparación por zonas todavía no está disponible.")
     else:

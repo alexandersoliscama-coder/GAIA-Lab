@@ -55,20 +55,16 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. Descargar la data de Kaggle en `data/`
+### 4. Descargar el relieve de la competencia (`static.npz`)
 
-La data no está en el repositorio por su tamaño. Puedes bajarla de dos formas (en ambos casos debes aceptar primero las reglas de la competencia en Kaggle):
+La app solo necesita `static.npz` (relieve y coordenadas de la grilla). La data de la competencia no se puede redistribuir, así que se descarga de Kaggle:
 
-* **Desde el navegador:** entra a la pestaña **Data** de la competencia en Kaggle, acepta las reglas, descarga los archivos y extrae el contenido dentro de la carpeta **`data/`**.
-* **Desde la terminal (API de Kaggle):** desde la raíz del repositorio (`GAIA-Lab`), ejecuta:
-  ```bash
-  pip install kaggle
-  kaggle competitions download -c hackathon-ia-pucp-2026
-  unzip hackathon-ia-pucp-2026.zip -d data/
-  ```
-  *(En Windows PowerShell, si no tienes `unzip`, puedes descomprimir con `Expand-Archive hackathon-ia-pucp-2026.zip -DestinationPath data/`).*
-
-Verifica que el archivo estático del dominio (`static.npz`) quede ubicado en **`data/`**:
+1. Entra a la competencia en Kaggle con tu cuenta, acepta las reglas y abre la pestaña **Data**.
+2. Descarga `static.npz` y muévelo a la carpeta **`data/`** del repositorio. Si prefieres *Download All*, se baja un `.zip`: muévelo a la carpeta del repositorio (`GAIA-Lab`) y extráelo con Python, que funciona igual en Windows, macOS y Linux:
+   ```bash
+   python -c "import zipfile; zipfile.ZipFile('hackathon-ia-pucp-2026.zip').extractall('data')"
+   ```
+3. Comprueba que el archivo quede en **`data/static.npz`**:
 ```text
 GAIA-Lab/
 ├── data/

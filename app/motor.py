@@ -420,9 +420,6 @@ def evaluar_cobertizo_sector(
         semaforo = "VERDE"
         accion = "Sin helada prevista esta noche (T° > margen de seguridad)."
 
-    if lluvia_24h_max >= 1.0:
-        accion += f" Agravante por lluvia previa: {lluvia_24h_max:.1f} mm en 24 h (enfriamiento húmedo: {chill_con_lluvia_max:.0f} kJ/m²·h)."
-
     return {
         "sector": sector_nombre,
         "altitud_m": float(static["dem"][i, j]),

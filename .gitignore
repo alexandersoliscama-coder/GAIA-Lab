@@ -3,6 +3,7 @@ data/*
 !data/README.md
 *.npz
 *.csv
+*.zip
 
 # Caché del GFS y salidas del producto
 gfs_cache.npz

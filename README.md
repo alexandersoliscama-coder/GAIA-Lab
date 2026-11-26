@@ -4,10 +4,10 @@ Sistema de alerta temprana y soporte a la decisión para criadores ganaderos alt
 
 ## Integrantes
 
-* Yeremi Alexander Camacho Solis
+* Yeremi Alexander Camacho Solís
 * Gabriel Dimas Gordillo Rodríguez 
-* Jordy Joseph Valles Moya
-* Alvaro Rodrigo Ayon Chinga
+* Joseph Alí Huamanyauri Hernández
+* Álvaro Rodrigo Ayon Chinga
 
 ## Video de presentación
 
@@ -28,7 +28,7 @@ Sistema de alerta temprana y soporte a la decisión para criadores ganaderos alt
 ### 1. Clonar el repositorio
 
 ```bash
-git clone [https://github.com/alexandersoliscama-coder/GAIA-Lab.git](https://github.com/alexandersoliscama-coder/GAIA-Lab.git)
+git clone https://github.com/alexandersoliscama-coder/GAIA-Lab.git
 cd GAIA-Lab
 ```
 

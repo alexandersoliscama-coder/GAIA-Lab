@@ -17,7 +17,7 @@ Sistema de alerta temprana y soporte a la decisión para criadores ganaderos alt
 
 ## Requisitos previos
 
-* **Python 3.11 o superior** (versiones anteriores como 3.10 no son compatibles con las ruedas de `numpy==2.4.6`, `pandas==3.1.1`, `torch==2.15.0`, `matplotlib==3.11.2` y `streamlit==1.67.0`).
+* **Python 3.11 a 3.15** (las versiones fijadas en `requirements.txt` tienen instaladores para ese rango; con Python 3.10 no instalan). Para ver tu versión: `python --version`.
 * **Git**
 * Conexión a internet para descargar el pronóstico GFS en vivo desde Open-Meteo (la aplicación guarda caché local tras la primera ejecución).
 

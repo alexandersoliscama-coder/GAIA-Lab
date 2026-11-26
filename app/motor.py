@@ -462,6 +462,7 @@ def recomendar_pastoreo_sector(Y, times, static, sector_nombre, alt_min=3800.0, 
     - Regla 1 (Clements et al., 2003): no asume que bajar siempre es más templado (evalúa T real del modelo).
     - Regla 2 (Provisional): prefiere la zona que NO tuvo helada (≤ 0 °C) en la madrugada y,
       entre las que no la tuvieron, la de menor índice de enfriamiento diurno medio.
+    Devuelve también el detalle de `zona_alta` y `zona_baja` para la interfaz de pastoreo.
     """
     i0, j0 = ubicar_celda_sector(sector_nombre, static, alt_min=alt_min, alt_max=alt_max)
     idx_madrugada, idx_dia, fecha_str = _indices_manana_dia(times)
@@ -474,7 +475,8 @@ def recomendar_pastoreo_sector(Y, times, static, sector_nombre, alt_min=3800.0, 
     alt_base = float(static["dem"][i0, j0])
 
     T_mad = Y[idx_madrugada, i_ini:i_fin, j_ini:j_fin, 1] - 273.15
-    tuvo_helada_mad = T_mad.min(axis=0) <= 0.0
+    tmin_mad_grid = T_mad.min(axis=0)
+    tuvo_helada_mad = tmin_mad_grid <= 0.0
 
     T_dia = Y[idx_dia, i_ini:i_fin, j_ini:j_fin, 1] - 273.15
     V_dia = np.sqrt(
@@ -494,11 +496,14 @@ def recomendar_pastoreo_sector(Y, times, static, sector_nombre, alt_min=3800.0, 
         pool = sin_helada if sin_helada.any() else mask
         mejor_idx = np.argmin(np.where(pool, chill_dia_medio, np.inf))
         r, c = np.unravel_index(mejor_idx, dem_sub.shape)
+        helada_celda = bool(tuvo_helada_mad[r, c])
         return {
-            "sin_helada": bool(sin_helada.any()),
-            "chill": float(chill_dia_medio[r, c]),
-            "alt": float(dem_sub[r, c]),
-            "t_dia": float(T_dia[:, r, c].mean()),
+            "altura_m": float(dem_sub[r, c]),
+            "helada_madrugada": helada_celda,
+            "tmin_madrugada": float(tmin_mad_grid[r, c]),
+            "tmedia_dia": float(T_dia[:, r, c].mean()),
+            "chill_dia_medio": float(chill_dia_medio[r, c]),
+            "sin_helada": not helada_celda,
         }
 
     cand_arriba = _evaluar_grupo(arriba_mask)
@@ -506,8 +511,8 @@ def recomendar_pastoreo_sector(Y, times, static, sector_nombre, alt_min=3800.0, 
 
     if cand_arriba and cand_abajo:
         # Prioridad 1: evitar zona con helada en madrugada; Prioridad 2: menor índice de enfriamiento diurno
-        score_arriba = (0 if cand_arriba["sin_helada"] else 1, cand_arriba["chill"])
-        score_abajo = (0 if cand_abajo["sin_helada"] else 1, cand_abajo["chill"])
+        score_arriba = (0 if cand_arriba["sin_helada"] else 1, cand_arriba["chill_dia_medio"])
+        score_abajo = (0 if cand_abajo["sin_helada"] else 1, cand_abajo["chill_dia_medio"])
         if score_arriba <= score_abajo:
             decision = "Pastorea en ladera alta"
             elegido = cand_arriba
@@ -526,16 +531,25 @@ def recomendar_pastoreo_sector(Y, times, static, sector_nombre, alt_min=3800.0, 
         razon = "única franja disponible dentro del rango de puna seleccionado"
     else:
         decision = "Mantén pastoreo en sector base"
-        elegido = {"alt": alt_base, "chill": float(chill_dia_medio.mean()), "sin_helada": not bool(tuvo_helada_mad.any()), "t_dia": float(T_dia.mean())}
+        elegido = {
+            "altura_m": alt_base,
+            "helada_madrugada": bool(tuvo_helada_mad.any()),
+            "tmin_madrugada": float(tmin_mad_grid.min()),
+            "tmedia_dia": float(T_dia.mean()),
+            "chill_dia_medio": float(chill_dia_medio.mean()),
+            "sin_helada": not bool(tuvo_helada_mad.any()),
+        }
         razon = "sin gradiente altitudinal significativo en celdas vecinas dentro del rango"
 
     return {
         "sector": sector_nombre,
         "fecha_manana": fecha_str,
         "alt_base": alt_base,
-        "alt_sugerida": elegido["alt"],
+        "alt_sugerida": elegido["altura_m"],
         "decision": decision,
-        "motivo": f"Para mañana {fecha_str} (07:00–17:00): ir hacia ~{elegido['alt']:.0f} m ({razon}; T° media diurna {elegido['t_dia']:.1f} °C).",
+        "zona_alta": cand_arriba,
+        "zona_baja": cand_abajo,
+        "motivo": f"Para mañana {fecha_str} (07:00–17:00): ir hacia ~{elegido['altura_m']:.0f} m ({razon}; T° media diurna {elegido['tmedia_dia']:.1f} °C).",
         "aviso_resolucion": "Cautela: celdas de 3 km (resolución efectiva WRF ~20 km / 7Δx; Skamarock, 2004); quebradas estrechas pueden variar.",
         "evidencia": "Provisional · Reglas físicas de inversión y enfriamiento (Clements et al., 2003; Pulgar Vidal, 2014)",
     }

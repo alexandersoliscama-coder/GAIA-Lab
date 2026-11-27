@@ -37,7 +37,8 @@ def obtener_modelo_en_cache():
     return cargar_recursos()
 
 
-st.title("Ganado Protegido · Pronóstico Agroclimático a 3 km")
+st.title("Decisiones para cuidar el ganado")
+st.caption("Ganado Protegido · Pronóstico agroclimático a 3 km")
 
 recursos = obtener_modelo_en_cache()
 
@@ -121,15 +122,23 @@ if st.button("Ejecutar pronóstico y decisiones", type="primary"):
         st.metric(
             f"Semáforo: {dec1['semaforo']}",
             f"{dec1['tmin_noche']:.1f} °C",
-            delta=f"Enfriamiento máx: {dec1['chill_max']:.0f} kJ/m²·h",
+            delta=f"Enfriamiento (R=0): {dec1['chill_seco_max']:.0f} kJ/m²·h ({dec1['nivel_chill']})",
             delta_color="off",
+            help="Comparado contra percentiles de 111 noches del entrenamiento, 18 feb a 30 jun 2024.",
         )
+        if dec1["lluvia_24h_max"] >= 1.0:
+            st.warning(
+                f"Agravante por lluvia (últimas 24 h): {dec1['lluvia_24h_max']:.1f} mm "
+                f"(enfriamiento húmedo: {dec1['chill_con_lluvia_max']:.0f} kJ/m²·h)"
+            )
+        else:
+            st.caption(f"Lluvia últimas 24 h: {dec1['lluvia_24h_max']:.1f} mm (sin agravante por humedad)")
         st.write(dec1["accion"])
         st.caption(f"Ventana: {dec1['ventana_noche']} | Hora mínima: {dec1['hora_critica']} ({dec1['altitud_m']:.0f} m)")
         st.caption(f"Evidencia: {dec1['evidencia']}")
 
     with c2:
-        st.subheader("2️⃣ Pastoreo mañana")
+        st.subheader("2️⃣ Pastoreo")
         st.metric(dec2["decision"], f"~{dec2['alt_sugerida']:.0f} m s. n. m.")
         st.write(dec2["motivo"])
         st.caption(dec2["aviso_resolucion"])
@@ -149,7 +158,29 @@ if st.button("Ejecutar pronóstico y decisiones", type="primary"):
 
     st.divider()
 
-    # Comparación GFS (27 km) vs Modelo IA (3 km) ordenada cronológicamente
+    st.subheader("¿Dónde pastorear?")
+    if "zona_alta" not in dec2 or "zona_baja" not in dec2:
+        st.caption("La comparación por zonas todavía no está disponible.")
+    else:
+        st.caption(f"Pronóstico para {dec2['fecha_manana']} (hora de Lima)")
+        for columna, (nombre, clave) in zip(
+            st.columns(2),
+            (("Zona alta", "zona_alta"), ("Zona baja", "zona_baja")),
+        ):
+            with columna:
+                st.markdown(f"**{nombre}**")
+                zona = dec2[clave]
+                if zona is None:
+                    st.caption(f"Sin {nombre.lower()} disponible en el rango")
+                    continue
+                st.write(f"Altitud: {zona['altura_m']:.0f} m s. n. m.")
+                helada = "Sí" if zona["helada_madrugada"] else "No"
+                st.write(f"¿Helada prevista de madrugada? {helada}")
+                st.write(f"Mínima de madrugada: {zona['tmin_madrugada']:.1f} °C")
+                st.write(f"Temperatura promedio de día: {zona['tmedia_dia']:.1f} °C")
+
+    st.divider()
+    # Comparación GFS (27 km) vs Modelo IA (3 km)
     st.subheader(f"Comparación GFS (27 km) vs. Modelo IA (3 km) en {sector}")
     g1, g2 = st.columns(2)
     g1.metric("Diferencia T° mínima (IA - GFS)", f"{comp['delta_tmin']:+.1f} °C")

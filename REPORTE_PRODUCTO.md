@@ -22,15 +22,17 @@ Describe tu modelo de downscaling: arquitectura (por ejemplo, CNN, U-Net, ConvLS
 
 ## 2. ¿Para quién es y qué problema le resuelve?
 
-¿Quién es tu usuario concreto (agricultor, guía de montaña, municipalidad…)? ¿Qué decisión/accion/etc toma hoy sin buena información y qué decide/toma/etc distinto con tu producto?
+El producto está dirigido a criadores de alpacas y ovinos de la puna. Antes de anochecer, el criador decide si resguarda el ganado en el cobertizo. Por la mañana, elige dónde llevarlo a pastar. Si considera quemar pastos, necesita saber si el fuego podría salirse de control. La app estima ese riesgo con los datos de las 13:00, hora de Lima, y la tarjeta de cobertizo ya muestra la hora prevista de la temperatura mínima. Una mala decisión puede dejar al ganado expuesto al frío, hacerle perder tiempo al mover los animales o dañar los pastos si el fuego se propaga.
+
+**Lo que pidió el familiar.** En la consulta inicial, un familiar de un integrante pidió saber dónde pastorear para poder bajar el ganado si se espera una helada en la parte alta. El equipo propone incluir en el aviso la zona, el día y la acción sugerida.
 
 ## 3. ¿Cuál es la propuesta de valor del producto?
 
-En una o dos frases: qué gana el usuario al usar tu producto. Si puedes, cuantifícalo (tiempo, dinero, riesgo evitado, alcance).
+Por la tarde, el criador puede consultar si conviene resguardar el ganado esa noche y a qué ladera llevarlo al día siguiente, con el motivo de cada recomendación y un pronóstico en celdas de 3 km por lado, frente a los 27 km del GFS. Para el horizonte de siete días, la app muestra la curva de temperatura y el mapa de mínimas.
 
 ## 4. ¿Por qué tu producto es diferente a algo usual?
 
-¿Qué lo distingue de una app de clima común o de un mapa con el pronóstico? ¿Qué hace que el usuario lo prefiera?
+La app responde tres preguntas del criador: si conviene resguardar el ganado, dónde llevarlo a pastar y qué riesgo hay de que una quema se salga de control. Para el pastoreo, compara las zonas alta y baja con las salidas del modelo, pues en noches frías el aire frío puede acumularse en las partes bajas. La app indica la fuente de los umbrales e identifica cuáles fueron adaptados. La app muestra la acción sugerida y el motivo para que el criador pueda valorar esa información junto con lo que conoce del terreno.
 
 ## 5. ¿Cómo usa el producto la salida de tu modelo?
 
@@ -45,5 +47,5 @@ Además, la aplicación muestra la comparación directa entre el pronóstico gru
 ## 6. Limitaciones y próximos pasos
 
 El sistema tiene cuatro limitaciones principales: primero, aunque entrega celdas de **3 km**, la resolución efectiva del downscaling desde GFS (~27 km) es menor que el espaciado de grilla (del orden de `~20 km` o `7Δx`, Skamarock, 2004), por lo que quebradas estrechas pueden variar localmente; segundo, los percentiles `p90`/`p97` del índice de enfriamiento están calibrados con **111 noches entre febrero y junio de 2024**, sin cubrir julio ni agosto; tercero, la lluvia usada para el agravante de 24 h y los días secos proviene directamente del GFS (~27 km) y no del modelo neuronal; y cuarto, a nivel de producto, las recomendaciones cubren solo **esta noche y mañana**, mientras que el criador solicitó avisos con una semana de anticipación.
-
+La app aún no envía avisos por SMS o WhatsApp.
 Como próximos pasos, proponemos validar en campo los umbrales provisionales (margen ámbar de `2 °C`, `10` días secos y franjas altitudinales de pastoreo) junto a criadores de Áncash, extender la calibración de percentiles a un año completo e incorporar alertas tempranas con horizonte de 7 días.

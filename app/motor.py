@@ -519,7 +519,7 @@ def recomendar_pastoreo_sector(Y, times, static, sector_nombre, alt_min=3800.0, 
     if cand_arriba and cand_abajo:
         # Prioridad 1: evitar zona con helada en madrugada; Prioridad 2: menor índice de enfriamiento diurno
         score_arriba = (0 if cand_arriba["sin_helada"] else 1, cand_arriba["chill_dia_medio"])
-        score_abajo = (0 if cand_abajo["sin_helada"] else 1, cand_abajo["chill_dia_medio"])
+        score_abajo = (0 if (cand_abajo["sin_helada"] and not cand_arriba["sin_helada"]) else 1, cand_abajo["chill_dia_medio"])
         if score_arriba <= score_abajo:
             decision = "Pastorea en ladera alta"
             elegido = cand_arriba

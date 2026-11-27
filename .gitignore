@@ -3,6 +3,7 @@ data/*
 !data/README.md
 *.npz
 *.csv
+*.zip
 
 # Caché del GFS y salidas del producto
 gfs_cache.npz
@@ -18,3 +19,6 @@ venv/
 # Claves y entorno
 .env
 kaggle.json
+
+!models/stats.npz
+!models/chill_percentiles.npz

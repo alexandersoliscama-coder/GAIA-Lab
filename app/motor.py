@@ -517,17 +517,23 @@ def recomendar_pastoreo_sector(Y, times, static, sector_nombre, alt_min=3800.0, 
     cand_abajo = _evaluar_grupo(abajo_mask)
 
     if cand_arriba and cand_abajo:
+        def _razon(elegida, otra, nombre_otra):
+            if elegida["sin_helada"] and not otra["sin_helada"]:
+                return f"evita la helada de madrugada prevista en la zona {nombre_otra}"
+            estado = "sin" if elegida["sin_helada"] else "con"
+            return f"ambas zonas {estado} helada de madrugada; esta tiene menor enfriamiento diurno"
+
         # Prioridad 1: evitar zona con helada en madrugada; Prioridad 2: menor índice de enfriamiento diurno
         score_arriba = (0 if cand_arriba["sin_helada"] else 1, cand_arriba["chill_dia_medio"])
-        score_abajo = (0 if (cand_abajo["sin_helada"] and not cand_arriba["sin_helada"]) else 1, cand_abajo["chill_dia_medio"])
+        score_abajo = (0 if cand_abajo["sin_helada"] else 1, cand_abajo["chill_dia_medio"])
         if score_arriba <= score_abajo:
             decision = "Pastorea en ladera alta"
             elegido = cand_arriba
-            razon = "sin helada de madrugada y menor enfriamiento diurno" if cand_arriba["sin_helada"] else "menor índice de enfriamiento diurno"
+            razon = _razon(cand_arriba, cand_abajo, "baja")
         else:
             decision = "Baja el ganado en la puna"
             elegido = cand_abajo
-            razon = "evita helada de madrugada en cumbres y tiene menor enfriamiento diurno" if cand_abajo["sin_helada"] else "menor índice de enfriamiento diurno"
+            razon = _razon(cand_abajo, cand_arriba, "alta")
     elif cand_arriba:
         decision = "Pastorea en ladera alta"
         elegido = cand_arriba
@@ -668,10 +674,10 @@ def evaluar_riesgo_quema_sector(Y, times, static, sector_nombre, alt_min=3800.0,
     i, j = ubicar_celda_sector(sector_nombre, static, alt_min=alt_min, alt_max=alt_max)
     dts_lima = [a_datetime_lima(t) for t in times]
 
-    # Buscar las 13:00 Lima (18:00 UTC) más cercana al día objetivo (mañana si existe, si no hoy)
+    # Primera ventana disponible de las 13:00 Lima (hoy si aún no pasa, o mañana si la serie inicia >= 13:00)
     idx_13 = [k for k, dt in enumerate(dts_lima) if dt.hour == 13]
     if idx_13:
-        k_obj = idx_13[1] if len(idx_13) > 1 and dts_lima[0].hour >= 13 else idx_13[0]
+        k_obj = idx_13[0]
     else:
         k_obj = int(np.argmin([abs(dt.hour - 13) for dt in dts_lima]))
 
